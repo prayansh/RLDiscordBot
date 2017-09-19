@@ -1,0 +1,14 @@
+{
+  "name": "rl-status-bot",
+  "version": "0.0.1",
+  "description": "A bot that updates you with rank",
+  "main": "bot.js",
+  "author": "Prayansh",
+  "dependencies": {
+    "discord.io": "^2.5.2",
+    "mongoose": "4.9.8",
+    "rls-api": "^1.0.2",
+    "unirest": "^0.5.1",
+    "winston": "^2.3.1"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "mongo_db": "BotDB",
+  "player_endpoint": "https://api.rocketleaguestats.com/v1/player",
+  "mongo_user": "prayansh"
+}
