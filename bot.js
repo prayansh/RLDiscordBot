@@ -64,7 +64,7 @@ bot.on('ready', function (evt) {
     logger.info(bot.username + ' - (' + bot.id + ')');
 });
 
-bot.on('message', function (user, userID, channelID, message, evt) {
+bot.on('message', function (discordName, discordID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
     if (message.substring(0, 1) == '!') {
@@ -75,11 +75,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'ping':
                 bot.sendMessage({
                     to: channelID,
-                    message: 'Pong!, your turn ' + user
+                    message: 'Pong!, your turn ' + discordName
                 });
                 break;
             case 'debug':
-                var message = "{\nuser=" + user + "\n,userId=" + userID + "\n,message=" + message;
+                var message = "{\nuser=" + discordName + "\n,userId=" + discordID + "\n,message=" + message;
                 bot.sendMessage({
                     to: channelID,
                     message: message
@@ -87,8 +87,15 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 break;
             case 'update':
                 logger.debug("Getting update for " + args[1]);
-                var player = getUser(args[1]);
-                getRLStats(player, user, channelID);
+                User.find({"discordId": discordID}, function (user) {
+                    getStats(user.steamId, user.platform).then(
+                        function (response) {
+                            bot.sendMessage({
+                                to: channelID,
+                                message: JSON.stringify(response.rankedSeasons)
+                            });
+                        });
+                });
                 break;
             case 'register':
                 if (!args[1] || !args[2]) {
@@ -99,14 +106,29 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     break;
                 }
                 logger.debug("Registering player=" + args[1] + ", platform=" + platforms[args[2]]);
-                var newUser = new User({"discordId": userID, "name": args[1], "platform": platforms[args[2]]});
-                newUser.save(function (err) {
-                    logger.debug("new user registered: " + JSON.stringify(err));
-                    bot.sendMessage({
-                        to: channelID,
-                        message: "You have been registered"
-                    });
-                });
+                getStats(args[1], platforms[args[2]]).then(
+                    function (data) {
+                        var newUser = new User({
+                            "discordId": discordID,
+                            "steamId": data.uniqueId,
+                            "name": data.displayName,
+                            "platform": platforms[args[2]]
+                        });
+                        newUser.save(function (err) {
+                            logger.debug("new user registered: " + JSON.stringify(err));
+                            bot.sendMessage({
+                                to: channelID,
+                                message: "You have been registered"
+                            });
+                        });
+                    },
+                    function (err) {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "Cannot find player " + args[1] + " for platform " + args[2]
+                        });
+                    }
+                );
                 break;
             case 'list':
                 User.find({}, function (response) {
@@ -128,9 +150,10 @@ function getUser(name) {
     return user;
 }
 
-function getStats(steamId, platform, playerName, channelID) {
+function getStats(steamId, platform) {
     return new Promise(function (resolve, reject) {
         RLClient.getPlayer(steamId, platform, function (status, data) {
+            logger.debug(status);
             if (status === 200) {
                 resolve(data);
             }
