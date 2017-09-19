@@ -174,28 +174,27 @@ const tierNames = [
 function nameForTier(tier) {
     tier = tier | 0;
     if (!tier || tier < 0 || tier >= tierNames.length) {
-        return 'Unranked (or low)';
+        return 'Unranked';
     }
     return tierNames[tier];
 }
 
 function rankOrEmpty(name, obj) {
     if (!obj || !obj.tier || !obj.division) {
-        return "Unknown rank";
+        return '';
     }
-    logger.info(name + ": Tier: " + nameForTier(obj.tier));
-
-    return name + " " + nameForTier(obj.tier) + ", div " + (obj.division + 1);
+    return name + ' ' + nameForTier(obj.tier) + ', div ' + (obj.division + 1) + '\n';
 }
 
 function formatData(playerData) {
     // TODO: Pass in rank / playlist to choose which to show.
     var season5 = playerData.rankedSeasons["5"];
-    if (!season5) {
-        return 'No known ranks for season 5';
+    var formatted = '';
+    if (season5) {
+        formatted = rankOrEmpty("1s", season5["10"])
+            + rankOrEmpty("2s", season5["11"])
+            + rankOrEmpty("3s", season5["12"])
+            + rankOrEmpty("3s solo", season5["13"]);
     }
-    return rankOrEmpty("1s", season5["10"]) + ", "
-        + rankOrEmpty("2s", season5["11"]) + ", "
-        + rankOrEmpty("3s", season5["12"]) + ", "
-        + rankOrEmpty("3s solo", season5["13"]);
+    return formatted == '' ? 'No ranks for season 5' : formatted;
 }
