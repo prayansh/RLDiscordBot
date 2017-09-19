@@ -40,7 +40,6 @@ var rls = require('rls-api');
 var RLClient = new rls.Client({
     token: auth.rl_token
 });
-var users = require('./users.json');
 var platforms = {
     "PC": 1,
     "PS4": 2,
@@ -71,13 +70,6 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
         switch (cmd) {
-            // !ping
-            case 'ping':
-                bot.sendMessage({
-                    to: channelID,
-                    message: 'Pong!, your turn ' + discordName
-                });
-                break;
             case 'debug':
                 var message = "{\nuser=" + discordName + "\n,userId=" + discordID + "\n,message=" + message;
                 bot.sendMessage({
@@ -87,14 +79,16 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                 break;
             case 'update':
                 logger.debug("Getting update for " + args[1]);
-                User.find({"discordId": discordID}, function (user) {
-                    getStats(user.steamId, user.platform).then(
-                        function (response) {
-                            bot.sendMessage({
-                                to: channelID,
-                                message: JSON.stringify(response.rankedSeasons)
+                User.findOne({'discordId': discordID}, function (err, user) {
+                    if (user) {
+                        getStats(user.steamId, user.platform).then(
+                            function (response) {
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: formatData(response)
+                                });
                             });
-                        });
+                    }
                 });
                 break;
             case 'register':
@@ -105,50 +99,53 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                     });
                     break;
                 }
-                logger.debug("Registering player=" + args[1] + ", platform=" + platforms[args[2]]);
-                getStats(args[1], platforms[args[2]]).then(
-                    function (data) {
-                        var newUser = new User({
-                            "discordId": discordID,
-                            "steamId": data.uniqueId,
-                            "name": data.displayName,
-                            "platform": platforms[args[2]]
-                        });
-                        newUser.save(function (err) {
-                            logger.debug("new user registered: " + JSON.stringify(err));
-                            bot.sendMessage({
-                                to: channelID,
-                                message: "You have been registered"
-                            });
-                        });
-                    },
-                    function (err) {
+                User.findOne({'discordId': discordID}, function (err, user) {
+                    if (!user) {
+                        logger.debug("Registering player=" + args[1] + ", platform=" + platforms[args[2]]);
+                        getStats(args[1], platforms[args[2]]).then(
+                            function (data) {
+                                var newUser = new User({
+                                    "discordId": discordID,
+                                    "steamId": data.uniqueId,
+                                    "name": data.displayName,
+                                    "platform": platforms[args[2]]
+                                });
+                                newUser.save(function (err) {
+                                    logger.debug("new user registered: " + JSON.stringify(err));
+                                    bot.sendMessage({
+                                        to: channelID,
+                                        message: "You have been registered"
+                                    });
+                                });
+                            },
+                            function (err) {
+                                bot.sendMessage({
+                                    to: channelID,
+                                    message: "Cannot find player " + args[1] + " for platform " + args[2]
+                                });
+                            }
+                        );
+                    } else {
                         bot.sendMessage({
                             to: channelID,
-                            message: "Cannot find player " + args[1] + " for platform " + args[2]
-                        });
+                            message: "User already registered as" + user.name
+                        })
                     }
-                );
+                });
                 break;
             case 'list':
-                User.find({}, function (response) {
-                    bot.sendMessage({
-                        to: channelID,
-                        message: JSON.stringify(response)
-                    });
+                User.find({}, function (err, users) {
+                    if (users instanceof Array) {
+                        users.forEach(function (user) {
+
+                        });
+                    }
                 });
                 break;
             // Just add any case commands if you want to..
         }
     }
 });
-
-function getUser(name) {
-    var user = {};
-    if (users[name])
-        user = users[name];
-    return user;
-}
 
 function getStats(steamId, platform) {
     return new Promise(function (resolve, reject) {
@@ -167,38 +164,38 @@ function getStats(steamId, platform) {
 
 // Formatting logic below
 const tierNames = [
-  'Bronze 1', 'Bronze 2', 'Bronze 3',
-  'Silver 1', 'Silver 2', 'Silver 3',
-  'Gold 1', 'Gold 2', 'Gold 3',
-  'Platinum 1', 'Platinum 2', 'Platinum 3',
-  'Diamond 1', 'Diamond 2', 'Diamond 3',
-  'Champ 1', 'Champ 2', 'Champ 3', 'Grand Champ'
-]
+    'Bronze 1', 'Bronze 2', 'Bronze 3',
+    'Silver 1', 'Silver 2', 'Silver 3',
+    'Gold 1', 'Gold 2', 'Gold 3',
+    'Platinum 1', 'Platinum 2', 'Platinum 3',
+    'Diamond 1', 'Diamond 2', 'Diamond 3',
+    'Champ 1', 'Champ 2', 'Champ 3', 'Grand Champ'
+];
 function nameForTier(tier) {
-  tier = tier | 0;
-  if (!tier || tier < 0 || tier >= tierNames.length) {
-    return 'Unranked (or low)';
-  }
-  return tierNames[tier];
+    tier = tier | 0;
+    if (!tier || tier < 0 || tier >= tierNames.length) {
+        return 'Unranked (or low)';
+    }
+    return tierNames[tier];
 }
 
 function rankOrEmpty(name, obj) {
-  if (!obj || !obj.tier || !obj.division) {
-    return "Unknown rank";
-  }
-  logger.info("Tier: " + nameForTier(obj.tier));
+    if (!obj || !obj.tier || !obj.division) {
+        return "Unknown rank";
+    }
+    logger.info(name + ": Tier: " + nameForTier(obj.tier));
 
-  return nameForTier(obj.tier) + ", div " + (obj.division + 1);
+    return name + " " + nameForTier(obj.tier) + ", div " + (obj.division + 1);
 }
 
 function formatData(playerData) {
     // TODO: Pass in rank / playlist to choose which to show.
-    let season5 = playerData.rankedSeasons["5"];
+    var season5 = playerData.rankedSeasons["5"];
     if (!season5) {
-      return 'No known ranks for season 5';
+        return 'No known ranks for season 5';
     }
-    return rankOrEmpty("1s", season5["10"]) +
-      rankOrEmpty("2s", season5["11"]) +
-      rankOrEmpty("3s", season5["12"]) +
-      rankOrEmpty("3s solo", season5["13"]);
+    return rankOrEmpty("1s", season5["10"]) + ", "
+        + rankOrEmpty("2s", season5["11"]) + ", "
+        + rankOrEmpty("3s", season5["12"]) + ", "
+        + rankOrEmpty("3s solo", season5["13"]);
 }
