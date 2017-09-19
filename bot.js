@@ -164,7 +164,41 @@ function getStats(steamId, platform) {
     });
 }
 
+
+// Formatting logic below
+const tierNames = [
+  'Bronze 1', 'Bronze 2', 'Bronze 3',
+  'Silver 1', 'Silver 2', 'Silver 3',
+  'Gold 1', 'Gold 2', 'Gold 3',
+  'Platinum 1', 'Platinum 2', 'Platinum 3',
+  'Diamond 1', 'Diamond 2', 'Diamond 3',
+  'Champ 1', 'Champ 2', 'Champ 3', 'Grand Champ'
+]
+function nameForTier(tier) {
+  tier = tier | 0;
+  if (!tier || tier < 0 || tier >= tierNames.length) {
+    return 'Unranked (or low)';
+  }
+  return tierNames[tier];
+}
+
+function rankOrEmpty(name, obj) {
+  if (!obj || !obj.tier || !obj.division) {
+    return "Unknown rank";
+  }
+  logger.info("Tier: " + nameForTier(obj.tier));
+
+  return nameForTier(obj.tier) + ", div " + (obj.division + 1);
+}
+
 function formatData(playerData) {
-    var message = JSON.stringify(playerData.rankedSeasons);
-    return message;
+    // TODO: Pass in rank / playlist to choose which to show.
+    let season5 = playerData.rankedSeasons["5"];
+    if (!season5) {
+      return 'No known ranks for season 5';
+    }
+    return rankOrEmpty("1s", season5["10"]) +
+      rankOrEmpty("2s", season5["11"]) +
+      rankOrEmpty("3s", season5["12"]) +
+      rankOrEmpty("3s solo", season5["13"]);
 }
