@@ -164,26 +164,27 @@ function getStats(steamId, platform) {
 
 // Formatting logic below
 const tierNames = [
-    'Bronze 1', 'Bronze 2', 'Bronze 3',
-    'Silver 1', 'Silver 2', 'Silver 3',
-    'Gold 1', 'Gold 2', 'Gold 3',
-    'Platinum 1', 'Platinum 2', 'Platinum 3',
-    'Diamond 1', 'Diamond 2', 'Diamond 3',
-    'Champ 1', 'Champ 2', 'Champ 3', 'Grand Champ'
+    ':third_place:', ':third_place::third_place:', ':third_place::third_place::third_place:',
+    ':second_place:', ':second_place::second_place:', ':second_place::second_place::second_place:',
+    ':first_place:', ':first_place::first_place:', ':first_place::first_place::first_place:',
+    ':fork_knife_plate:', ':fork_knife_plate::fork_knife_plate:', ':fork_knife_plate::fork_knife_plate::fork_knife_plate:',
+    ':gem:', ':gem::gem:', ':gem::gem::gem:',
+    ':trophy:', ':trophy::trophy:', ':trophy::trophy::trophy:',
+    'Grand :trophy:'
 ];
 function nameForTier(tier) {
     tier = tier | 0;
-    if (!tier || tier < 0 || tier >= tierNames.length) {
+    if (!tier || tier <= 0 || tier >= tierNames.length) {
         return 'Unranked';
     }
-    return tierNames[tier];
+    return tierNames[tier - 1];
 }
 
 function rankOrEmpty(name, obj) {
-    if (!obj || !obj.tier || !obj.division) {
+    if (!obj || !obj.tier) {
         return '';
     }
-    return name + ' ' + nameForTier(obj.tier) + ', div ' + (obj.division + 1) + '\n';
+    return name + ':  ' + nameForTier(obj.tier) + ', div ' + (obj.division + 1) + '\n';
 }
 
 function formatData(playerData) {
@@ -193,8 +194,8 @@ function formatData(playerData) {
     if (season5) {
         formatted = rankOrEmpty("1s", season5["10"])
             + rankOrEmpty("2s", season5["11"])
-            + rankOrEmpty("3s", season5["12"])
-            + rankOrEmpty("3s solo", season5["13"]);
+            + rankOrEmpty("Solo 3s", season5["12"])
+            + rankOrEmpty("3s", season5["13"]);
     }
     return formatted == '' ? 'No ranks for season 5' : formatted;
 }
