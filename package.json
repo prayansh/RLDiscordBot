@@ -1,8 +1,19 @@
 {
   "name": "rl-status-bot",
-  "version": "0.0.1",
-  "description": "A bot that updates you with rank",
+  "version": "1.0.0",
+  "description": "A discord bot that updates you with Rocket League stats",
   "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "keywords": [
+    "node",
+    "heroku",
+    "rocket",
+    "league",
+    "rank",
+    "update"
+  ],
   "author": "Prayansh",
   "dependencies": {
     "discord.io": "^2.5.2",
