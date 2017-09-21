@@ -71,7 +71,6 @@ bot.on('ready', function (evt) {
     logger.info(bot.username + ' - (' + bot.id + ')');
 });
 
-
 bot.on('message', function (discordName, discordID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
@@ -262,7 +261,7 @@ function rankOrEmpty(name, obj) {
 
 function seasonRankToText(playerData) {
     var season5 = playerData.rankedSeasons[currentSeason];
-    var formatted = ' \n';
+    var formatted = '-----------------------------\n';
     if (season5) {
         formatted += rankOrEmpty("Duel: ", season5["10"])
             + rankOrEmpty("Doubles: ", season5["11"])
@@ -273,8 +272,7 @@ function seasonRankToText(playerData) {
 }
 
 function old2newText(oldStats, newStats) {
-    var message = ' \n';
-    message += '-----------------------------\n';
+    var message = '-----------------------------\n';
     for (var playlist in oldStats) {
         var oldStat = oldStats[playlist];
         var newStat = newStats[playlist];
