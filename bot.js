@@ -1,6 +1,18 @@
 var auth = require('./auth.json');
 var properties = require('./properties.json');
 
+var getAuth = function (type) {
+    var token = '';
+    if (type.toLowerCase() === 'discord') {
+        token = (auth) ? auth.discord_token : process.env.DISCORD_TOKEN;
+    } else if (type.toLowerCase() === 'rl') {
+        token = (auth) ? auth.rl_token : process.env.RL_TOKEN;
+    } else if (type.toLowerCase() === 'mongo') {
+        token = (auth) ? auth.mongo_pass : process.env.MONGO_PASS;
+    }
+    return token;
+};
+
 // Mongo Code
 var mongoose = require('mongoose');
 // Mongoose Schema definition
@@ -20,7 +32,7 @@ User = mongoose.model('UsersDB', userSchema);
 Season = mongoose.model('SeasonStatsDB', seasonStatSchema);
 
 var uri = "mongodb://"
-        + properties.mongo_user + ":" + auth.mongo_pass + "@"
+        + properties.mongo_user + ":" + getAuth('mongo') + "@"
         + "rldiscordbot-shard-00-00-k9ogi.mongodb.net:27017"
         + ",rldiscordbot-shard-00-01-k9ogi.mongodb.net:27017"
         + ",rldiscordbot-shard-00-02-k9ogi.mongodb.net:27017"
@@ -38,7 +50,7 @@ var Discord = require('discord.io');
 var logger = require('winston');
 var rls = require('rls-api');
 var RLClient = new rls.Client({
-    token: auth.rl_token
+    token: getAuth('rl')
 });
 
 var Color = {
@@ -62,7 +74,7 @@ logger.add(logger.transports.Console, {
 logger.level = 'debug';
 // Initialize Discord Bot
 var bot = new Discord.Client({
-    token: auth.discord_token,
+    token: getAuth('discord'),
     autorun: true
 });
 bot.on('ready', function (evt) {
@@ -151,13 +163,13 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                 User.findOne({'discordId': discordID}, function (err, user) {
                     if (!user) {
                         logger.debug("Registering player=" + args[1] + ", platform=" + platforms[args[2]]);
-                        getStats(args[1], platforms[args[2]]).then(
+                        getStats(args[1], platforms[args[2].toUpperCase()]).then(
                             function (data) {
                                 var newUser = new User({
                                     "discordId": discordID,
                                     "steamId": data.uniqueId,
                                     "name": data.displayName,
-                                    "platform": platforms[args[2]]
+                                    "platform": platforms[args[2].toUpperCase()]
                                 });
                                 newUser.save(function (err) {
                                     logger.debug("new user registered: " + JSON.stringify(err));
