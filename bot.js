@@ -105,8 +105,8 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                 var newSeasonStats = {
                                     "Duel": _seasonData["10"],
                                     "Doubles": _seasonData["11"],
-                                    "Standard": _seasonData["12"],
-                                    "Solo": _seasonData["13"]
+                                    "Standard": _seasonData["13"],
+                                    "Solo": _seasonData["12"]
                                 };
                                 Season.findOne({'discordId': discordID}, function (err, _oldSeasonStats) {
                                     var oldSeasonStats = JSON.parse(JSON.stringify(_oldSeasonStats.data));
@@ -147,8 +147,8 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                 var seasonData = {
                                     "Duel": _seasonData["10"],
                                     "Doubles": _seasonData["11"],
-                                    "Standard": _seasonData["12"],
-                                    "Solo": _seasonData["13"]
+                                    "Standard": _seasonData["13"],
+                                    "Solo": _seasonData["12"]
                                 };
                                 Season.findOneAndUpdate({'discordId': discordID},
                                     {"data": seasonData});
@@ -191,8 +191,8 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                 var seasonData = {
                                     "Duel": _seasonData["10"],
                                     "Doubles": _seasonData["11"],
-                                    "Standard": _seasonData["12"],
-                                    "Solo": _seasonData["13"]
+                                    "Standard": _seasonData["13"],
+                                    "Solo": _seasonData["12"]
                                 };
                                 var newSeasonStat = new Season({
                                     "discordId": discordID,
