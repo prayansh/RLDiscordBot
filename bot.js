@@ -1,4 +1,9 @@
-var auth = require('./auth.json');
+var auth = false;
+try {
+    auth = require('./auth.json');
+} catch (ex) {
+    auth = false;
+}
 var properties = require('./properties.json');
 
 var getAuth = function (type) {
