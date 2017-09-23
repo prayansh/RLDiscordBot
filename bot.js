@@ -120,8 +120,16 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                             }
                                         });
                                         _oldSeasonStats.data = newSeasonStats;
+                                        _oldSeasonStats.save(function (err) {
+                                            if (!err) {
+                                                logger.error("Error saving stat");
+                                            } else {
+                                                logger.debug("season data added");
+                                            }
+                                        })
+                                    } else {
+                                        logger.error("Error finding season");
                                     }
-
                                 });
 
                             });
@@ -151,7 +159,11 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                     "Solo": _seasonData["12"]
                                 };
                                 Season.findOneAndUpdate({'discordId': discordID},
-                                    {"data": seasonData});
+                                    {"data": seasonData}, function (err, doc) {
+                                        if (err) {
+                                            logger.error("Couldnt update record");
+                                        }
+                                    });
                             });
                     }
                 });
