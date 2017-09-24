@@ -285,7 +285,7 @@ function rankOrEmpty(name, obj) {
     if (!obj || !obj.tier) {
         return '';
     }
-    return name + emojiForTier(obj.tier) + ' , div ' + (obj.division + 1) + '\n';
+    return name + emojiForTier(obj.tier) + ' , div ' + (obj.division + 1) + ": " + obj.rankPoints + '\n';
 }
 
 function seasonRankToText(playerData) {
