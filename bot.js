@@ -115,7 +115,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                             to: channelID,
                                             embed: {
                                                 color: Color.GREEN,
-                                                title: 'Updates for ' + user.steamId,
+                                                title: 'Updates for ' + user.name,
                                                 description: old2newText(oldSeasonStats, newSeasonStats)
                                             }
                                         });
@@ -147,7 +147,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                     to: channelID,
                                     embed: {
                                         color: Color.GREEN,
-                                        title: user.steamId + ' season ranks',
+                                        title: user.name + "'s season " + currentSeason + " ranks",
                                         description: seasonRankToText(response)
                                     }
                                 });
