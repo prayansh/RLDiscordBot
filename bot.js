@@ -37,13 +37,13 @@ User = mongoose.model('UsersDB', userSchema);
 Season = mongoose.model('SeasonStatsDB', seasonStatSchema);
 
 var uri = "mongodb://"
-        + properties.mongo_user + ":" + getAuth('mongo') + "@"
-        + "rldiscordbot-shard-00-00-k9ogi.mongodb.net:27017"
-        + ",rldiscordbot-shard-00-01-k9ogi.mongodb.net:27017"
-        + ",rldiscordbot-shard-00-02-k9ogi.mongodb.net:27017"
-        + "/" + properties.mongo_db
-        + "?ssl=true&replicaSet=RLDiscordBot-shard-0&authSource=admin"
-    ;
+    + properties.mongo_user + ":" + getAuth('mongo') + "@"
+    + "rldiscordbot-shard-00-00-k9ogi.mongodb.net:27017"
+    + ",rldiscordbot-shard-00-01-k9ogi.mongodb.net:27017"
+    + ",rldiscordbot-shard-00-02-k9ogi.mongodb.net:27017"
+    + "/" + properties.mongo_db
+    + "?ssl=true&replicaSet=RLDiscordBot-shard-0&authSource=admin"
+;
 
 mongoose.connect(uri, function (err) {
     if (err) console.error(err);
@@ -69,7 +69,7 @@ var platforms = {
     "PS4": 2,
     "XBOX": 3
 };
-var currentSeason = 5;
+var currentSeason = process.env.CURRENT_SEASON | 5;
 // Configure logger settings
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -115,7 +115,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                             to: channelID,
                                             embed: {
                                                 color: Color.GREEN,
-                                                title: 'Your updates',
+                                                title: 'Updates for ' + user.steamId,
                                                 description: old2newText(oldSeasonStats, newSeasonStats)
                                             }
                                         });
@@ -147,7 +147,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                     to: channelID,
                                     embed: {
                                         color: Color.GREEN,
-                                        title: 'Your season ranks',
+                                        title: user.steamId + ' season ranks',
                                         description: seasonRankToText(response)
                                     }
                                 });
@@ -276,6 +276,7 @@ const tierNames = [
     '<:champ1:360258826642915328>', '<:champ2:360258826928259074>', '<:champ3:360258826127147009>',
     '<:grand_chump:360258827930697729>'
 ];
+
 function emojiForTier(tier) {
     tier = tier | 0;
     return tierNames[tier];
@@ -307,15 +308,11 @@ function old2newText(oldStats, newStats) {
         var newStat = newStats[playlist];
         var matchesPlayedSince = newStat["matchesPlayed"] - oldStat["matchesPlayed"];
         var pointsChange = newStat["rankPoints"] - oldStat["rankPoints"];
-        message += playlist + ": ";
         if (matchesPlayedSince > 0) {
-            message += 'You have ' + ((pointsChange > 0) ? 'gained' : 'lost') + ' ' + Math.abs(pointsChange) + ' points '
+            message += playlist + ": " + 'You have ' + ((pointsChange > 0) ? 'gained' : 'lost') + ' ' + Math.abs(pointsChange) + ' points '
                 + ' in ' + matchesPlayedSince + ' matches'
                 + '\n';
-        } else {
-            message += ' No updates'
         }
-        message += '\n';
     }
     return message;
 }
