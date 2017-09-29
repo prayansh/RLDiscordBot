@@ -147,7 +147,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                     to: channelID,
                                     embed: {
                                         color: Color.GREEN,
-                                        title: user.name + "'s season " + currentSeason + "ranks",
+                                        title: user.name + "'s season " + currentSeason + " ranks",
                                         description: seasonRankToText(response)
                                     }
                                 });
