@@ -272,20 +272,20 @@ function emojiForTier(tier) {
 }
 
 function rankOrEmpty(name, obj) {
-    if (!obj || !obj.tier) {
+    if (!obj) {
         return '';
     }
     return name + emojiForTier(obj.tier) + ' , div ' + (obj.division + 1) + " (" + obj.rankPoints + " mmr) " + '\n';
 }
 
 function seasonRankToText(playerData) {
-    var season5 = playerData.rankedSeasons[currentSeason];
+    var currentSeasonData = playerData.rankedSeasons[currentSeason];
     var formatted = '-----------------------------\n';
-    if (season5) {
-        formatted += rankOrEmpty("Duel: ", season5["10"])
-            + rankOrEmpty("Doubles: ", season5["11"])
-            + rankOrEmpty("Solo: ", season5["12"])
-            + rankOrEmpty("Standard: ", season5["13"]);
+    if (currentSeasonData) {
+        formatted += rankOrEmpty("Duel: ", currentSeasonData["10"])
+            + rankOrEmpty("Doubles: ", currentSeasonData["11"])
+            + rankOrEmpty("Solo: ", currentSeasonData["12"])
+            + rankOrEmpty("Standard: ", currentSeasonData["13"]);
     }
     return formatted == '' ? 'No ranks for current season' : formatted;
 }
