@@ -94,6 +94,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
     if (message.substring(0, 1) == '!') {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
+        var argsLeft = args.slice(1);
         switch (cmd) {
             case 'update': {
                 User.findOne({'discordId': discordID}, function (err, user) {
@@ -116,7 +117,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                             embed: {
                                                 color: Color.GREEN,
                                                 title: 'Updates for ' + user.name,
-                                                description: old2newText(oldSeasonStats, newSeasonStats)
+                                                description: old2newText(oldSeasonStats, newSeasonStats, argsLeft)
                                             }
                                         });
                                         _oldSeasonStats.data = newSeasonStats;
@@ -148,7 +149,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                     embed: {
                                         color: Color.GREEN,
                                         title: user.name + "'s season " + currentSeason + " ranks",
-                                        description: seasonRankToText(response)
+                                        description: seasonRankToText(response, argsLeft)
                                     }
                                 });
                                 var _seasonData = response["rankedSeasons"][currentSeason];
@@ -278,30 +279,72 @@ function rankOrEmpty(name, obj) {
     return name + emojiForTier(obj.tier) + ' , div ' + (obj.division + 1) + " (" + obj.rankPoints + " mmr) " + '\n';
 }
 
-function seasonRankToText(playerData) {
-    var currentSeasonData = playerData.rankedSeasons[currentSeason];
-    var formatted = '-----------------------------\n';
-    if (currentSeasonData) {
-        formatted += rankOrEmpty("Duel: ", currentSeasonData["10"])
-            + rankOrEmpty("Doubles: ", currentSeasonData["11"])
-            + rankOrEmpty("Solo: ", currentSeasonData["12"])
-            + rankOrEmpty("Standard: ", currentSeasonData["13"]);
+// If provided, let actions restrict the playlist by mentioning "1s" or "Doubles" etc in args.
+var ALL_PLAYLISTS = ["10", "11", "12", "13"];
+function parsePlaylistArgs(argsLeft) {
+    var playlists = [];
+    if (argsLeft.indexOf("Duel") > -1 || argsLeft.indexOf("1s") > -1) {
+        playlists.push("10");
     }
-    return formatted == '' ? 'No ranks for current season' : formatted;
+    if (argsLeft.indexOf("Doubles") > -1 || argsLeft.indexOf("2s") > -1) {
+        playlists.push("11");
+    }
+    if (argsLeft.indexOf("Solo") > -1) {
+        playlists.push("12");
+    }
+    if (argsLeft.indexOf("Standard") > -1 || argsLeft.indexOf("3s") > -1) {
+        playlists.push("13");
+    }
+    // If none provided, use all playlists.
+    return playlists.length == 0 ? ALL_PLAYLISTS : playlists;
 }
 
-function old2newText(oldStats, newStats) {
-    var message = '-----------------------------\n';
+var FORMAT_START = '-----------------------------\n';
+function seasonRankToText(playerData, argsLeft) {
+    var currentSeasonData = playerData.rankedSeasons[currentSeason];
+    var formatted = FORMAT_START;
+    if (currentSeasonData) {
+        var playlists = parsePlaylistArgs(argsLeft);
+        if (playlists.indexOf("10") > -1) {
+            formatted += rankOrEmpty("Duel: ", currentSeasonData["10"]);
+        }
+        if (playlists.indexOf("11") > -1) {
+            formatted += rankOrEmpty("Doubles: ", currentSeasonData["11"]);
+        }
+        if (playlists.indexOf("12") > -1) {
+            formatted += rankOrEmpty("Solo: ", currentSeasonData["12"]);
+        }
+        if (playlists.indexOf("13") > -1) {
+            formatted += rankOrEmpty("Standard: ", currentSeasonData["13"]);
+        }
+    }
+    if (formatted == FORMAT_START) {
+        formatted += 'No ranks for current season';
+    }
+    return formatted;
+}
+
+function old2newText(oldStats, newStats, argsLeft) {
+    var playlists = parsePlaylistArgs(argsLeft);
+
+    var formatted = FORMAT_START;
     for (var playlist in oldStats) {
+        if (playlists.indexOf(playlist) == -1) {
+            continue;
+        }
         var oldStat = oldStats[playlist];
         var newStat = newStats[playlist];
         var matchesPlayedSince = newStat["matchesPlayed"] - oldStat["matchesPlayed"];
         var pointsChange = newStat["rankPoints"] - oldStat["rankPoints"];
         if (matchesPlayedSince > 0) {
-            message += playlist + ": " + 'You have ' + ((pointsChange > 0) ? 'gained' : 'lost') + ' ' + Math.abs(pointsChange) + ' points '
+            formatted += playlist + ": "
+                + 'You have ' + ((pointsChange > 0) ? 'gained' : 'lost') + ' ' + Math.abs(pointsChange) + ' points '
                 + ' in ' + matchesPlayedSince + ' matches'
                 + '\n';
         }
     }
-    return message;
+    if (formatted == FORMAT_START) {
+        formatted += 'No updates since last time';
+    }
+    return formatted;
 }
