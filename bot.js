@@ -69,7 +69,7 @@ var platforms = {
     "PS4": 2,
     "XBOX": 3
 };
-var currentSeason = process.env.CURRENT_SEASON | 5;
+var currentSeason = process.env.CURRENT_SEASON;
 // Configure logger settings
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -230,17 +230,6 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                             to: channelID,
                             message: "User already registered as " + user.name
                         })
-                    }
-                });
-                break;
-            }
-            case 'list': {
-                User.find({}, function (err, users) {
-                    if (users instanceof Array) {
-                        var message = "";
-                        users.forEach(function (user) {
-
-                        });
                     }
                 });
                 break;
