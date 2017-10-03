@@ -1,3 +1,5 @@
 auth.json
 node_modules
+package-lock.json
+users.json
 .idea

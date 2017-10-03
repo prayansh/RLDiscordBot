@@ -1,74 +1,18 @@
-var auth = false;
-try {
-    auth = require('./auth.json');
-} catch (ex) {
-    auth = false;
-}
-var properties = require('./properties.json');
+var db = require('./db.js');
+db.connect();
 
-var getAuth = function (type) {
-    var token = '';
-    if (type.toLowerCase() === 'discord') {
-        token = (auth) ? auth.discord_token : process.env.DISCORD_TOKEN;
-    } else if (type.toLowerCase() === 'rl') {
-        token = (auth) ? auth.rl_token : process.env.RL_TOKEN;
-    } else if (type.toLowerCase() === 'mongo') {
-        token = (auth) ? auth.mongo_pass : process.env.MONGO_PASS;
-    }
-    return token;
-};
-
-// Mongo Code
-var mongoose = require('mongoose');
-// Mongoose Schema definition
-var userSchema = new mongoose.Schema({
-    steamId: String,
-    discordId: String,
-    name: String,
-    platform: Number
-});
-
-var seasonStatSchema = new mongoose.Schema({
-    discordId: String,
-    data: Object
-});
-
-User = mongoose.model('UsersDB', userSchema);
-Season = mongoose.model('SeasonStatsDB', seasonStatSchema);
-
-var uri = "mongodb://"
-        + properties.mongo_user + ":" + getAuth('mongo') + "@"
-        + "rldiscordbot-shard-00-00-k9ogi.mongodb.net:27017"
-        + ",rldiscordbot-shard-00-01-k9ogi.mongodb.net:27017"
-        + ",rldiscordbot-shard-00-02-k9ogi.mongodb.net:27017"
-        + "/" + properties.mongo_db
-        + "?ssl=true&replicaSet=RLDiscordBot-shard-0&authSource=admin"
-    ;
-
-mongoose.connect(uri, function (err) {
-    if (err) console.error(err);
-    else console.log('mongo connected');
-});
-// End of Mongo Code
+var auth = require('./auth.js');
+var consts = require('./consts.js');
+var rankCommand = require('./command/rank.js');
 
 var Discord = require('discord.io');
 var logger = require('winston');
 var rls = require('rls-api');
 var RLClient = new rls.Client({
-    token: getAuth('rl')
+    token: auth.getAuth('rl')
 });
 
-var Color = {
-    RED: 0xe74c3c,
-    BLUE: 0x3498db,
-    GREEN: 0x2ecc71
-};
 
-var platforms = {
-    "PC": 1,
-    "PS4": 2,
-    "XBOX": 3
-};
 var currentSeason = process.env.CURRENT_SEASON;
 // Configure logger settings
 logger.remove(logger.transports.Console);
@@ -79,7 +23,7 @@ logger.add(logger.transports.Console, {
 logger.level = 'debug';
 // Initialize Discord Bot
 var bot = new Discord.Client({
-    token: getAuth('discord'),
+    token: auth.getAuth('discord'),
     autorun: true
 });
 bot.on('ready', function (evt) {
@@ -104,7 +48,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                 break;
             }
             case 'update': {
-                User.findOne({'discordId': discordID}, function (err, user) {
+                db.User.findOne({'discordId': discordID}, function (err, user) {
                     if (user) {
                         logger.debug("Getting rank for " + user.name);
                         getStats(user.steamId, user.platform).then(
@@ -116,18 +60,18 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                     "Standard": _seasonData["13"],
                                     "Solo": _seasonData["12"]
                                 };
-                                Season.findOne({'discordId': discordID}, function (err, _oldSeasonStats) {
+                                db.Season.findOne({'discordId': discordID}, function (err, _oldSeasonStats) {
                                     var oldSeasonStats = JSON.parse(JSON.stringify(_oldSeasonStats.data));
                                     if (!err) {
                                         bot.sendMessage({
                                             to: channelID,
                                             embed: {
-                                                color: Color.GREEN,
+                                                color: consts.Color.GREEN,
                                                 title: 'Updates for ' + user.name,
-                                                description: old2newText(oldSeasonStats, newSeasonStats, argsLeft)
+                                                description: formatting.old2newText(oldSeasonStats, newSeasonStats, argsLeft)
                                             }
                                         });
-                                        Season.findOneAndUpdate({'discordId': discordID},
+                                        db.Season.findOneAndUpdate({'discordId': discordID},
                                             {"data": newSeasonStats}, function (err, doc) {
                                                 if (err) {
                                                     logger.error("Couldnt update record");
@@ -150,42 +94,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                 break;
             }
             case 'rank': {
-                var queryParam = discordID;
-                User.findOne({'discordId': queryParam}, function (err, user) {
-                    if (user) {
-                        logger.debug("Getting update for " + user.name);
-                        getStats(user.steamId, user.platform).then(
-                            function (response) {
-                                var _seasonData = response["rankedSeasons"][currentSeason];
-                                var seasonData = {
-                                    "Duel": _seasonData["10"],
-                                    "Doubles": _seasonData["11"],
-                                    "Standard": _seasonData["13"],
-                                    "Solo": _seasonData["12"]
-                                };
-                                bot.sendMessage({
-                                    to: channelID,
-                                    embed: {
-                                        color: Color.GREEN,
-                                        title: user.name + "'s season " + currentSeason + " ranks",
-                                        description: seasonRankToText(seasonData, argsLeft)
-                                    }
-                                });
-                                Season.findOneAndUpdate({'discordId': discordID},
-                                    {"data": seasonData}, function (err, doc) {
-                                        if (err) {
-                                            logger.error("Couldnt update record");
-                                        }
-                                    });
-                            });
-                    }
-                    else {
-                        bot.sendMessage({
-                            to: channelID,
-                            message: "No user with name=" + queryParam + " found"
-                        });
-                    }
-                });
+                rankCommand.run(discordName, discordID, channelID, message, evt);
                 break;
             }
             case 'register': {
@@ -196,23 +105,23 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                     });
                     break;
                 }
-                User.findOne({'discordId': discordID}, function (err, user) {
+                db.User.findOne({'discordId': discordID}, function (err, user) {
                     if (!user) {
-                        logger.debug("Registering player=" + args[1] + ", platform=" + platforms[args[2]]);
-                        getStats(args[1], platforms[args[2].toUpperCase()]).then(
+                        logger.debug("Registering player=" + args[1] + ", platform=" + consts.Platforms[args[2]]);
+                        getStats(args[1], consts.Platforms[args[2].toUpperCase()]).then(
                             function (data) {
                                 var newUser = new User({
                                     "discordId": discordID,
                                     "steamId": data.uniqueId,
                                     "name": data.displayName,
-                                    "platform": platforms[args[2].toUpperCase()]
+                                    "platform": consts.Platforms[args[2].toUpperCase()]
                                 });
                                 newUser.save(function (err) {
                                     logger.debug("new user registered: " + JSON.stringify(err));
                                     bot.sendMessage({
                                         to: channelID,
                                         embed: {
-                                            color: Color.BLUE,
+                                            color: consts.Color.BLUE,
                                             title: 'Registration Success',
                                             description: "You have been registered"
                                         }
@@ -237,7 +146,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                 bot.sendMessage({
                                     to: channelID,
                                     embed: {
-                                        color: Color.RED,
+                                        color: consts.Color.RED,
                                         title: 'Registration Failed',
                                         description: "Cannot find player " + args[1] + " for platform " + args[2]
                                     }
@@ -270,98 +179,4 @@ function getStats(steamId, platform) {
             }
         });
     });
-}
-
-
-// Formatting logic below
-const tierNames = [
-    '<:unranked:360259883443945472>',
-    '<:bronze1:360258827293032450>', '<:bronze2:360258828647792640>', '<:bronze3:360258827838423040>',
-    '<:silver1:360258826882252800>', '<:silver2:360258827716788225>', '<:silver3:360258827855200256>',
-    '<:gold1:360258826697441281>', '<:gold2:360258827804737566>', ': <:gold3:360258827125260291>',
-    '<:plat1:360258827863457792>', '<:plat2:360258827859394560>', '<:plat3:360258827851137024>',
-    '<:diamond1:360258827481776129>', '<:diamond2:360258827427250183>', '<:diamond3:360258827750342658>',
-    '<:champ1:360258826642915328>', '<:champ2:360258826928259074>', '<:champ3:360258826127147009>',
-    '<:grand_chump:360258827930697729>'
-];
-
-function emojiForTier(tier) {
-    tier = tier | 0;
-    return tierNames[tier];
-}
-
-function rankOrEmpty(name, obj) {
-    if (!obj) {
-        return '';
-    }
-    return name + emojiForTier(obj.tier) + ' , div ' + (obj.division + 1) + " (" + obj.rankPoints + " mmr) " + '\n';
-}
-
-// If provided, let actions restrict the playlist by mentioning "1s" or "Doubles" etc in args.
-var ALL_PLAYLISTS = ["Duel", "Doubles", "Solo", "Standard"];
-function parsePlaylistArgs(argsLeft) {
-    var playlists = [];
-    if (argsLeft.indexOf("Duel") > -1 || argsLeft.indexOf("1s") > -1) {
-        playlists.push("Duel");
-    }
-    if (argsLeft.indexOf("Doubles") > -1 || argsLeft.indexOf("2s") > -1) {
-        playlists.push("Doubles");
-    }
-    if (argsLeft.indexOf("Solo") > -1) {
-        playlists.push("Solo");
-    }
-    if (argsLeft.indexOf("Standard") > -1 || argsLeft.indexOf("3s") > -1) {
-        playlists.push("Standard");
-    }
-    // If none provided, use all playlists.
-    return playlists.length == 0 ? ALL_PLAYLISTS : playlists;
-}
-
-var FORMAT_START = '-----------------------------\n';
-function seasonRankToText(currentSeasonData, argsLeft) {
-    var formatted = FORMAT_START;
-    if (currentSeasonData) {
-        var playlists = parsePlaylistArgs(argsLeft);
-        if (playlists.indexOf("Duel") > -1) {
-            formatted += rankOrEmpty("Duel: ", currentSeasonData["Duel"]);
-        }
-        if (playlists.indexOf("Doubles") > -1) {
-            formatted += rankOrEmpty("Doubles: ", currentSeasonData["Doubles"]);
-        }
-        if (playlists.indexOf("Solo") > -1) {
-            formatted += rankOrEmpty("Solo: ", currentSeasonData["Solo"]);
-        }
-        if (playlists.indexOf("Standard") > -1) {
-            formatted += rankOrEmpty("Standard: ", currentSeasonData["Standard"]);
-        }
-    }
-    if (formatted == FORMAT_START) {
-        formatted += 'No ranks for current season';
-    }
-    return formatted;
-}
-
-function old2newText(oldStats, newStats, argsLeft) {
-    var playlists = parsePlaylistArgs(argsLeft);
-
-    var formatted = FORMAT_START;
-    for (var playlist in oldStats) {
-        if (playlists.indexOf(playlist) == -1) {
-            continue;
-        }
-        var oldStat = oldStats[playlist];
-        var newStat = newStats[playlist];
-        var matchesPlayedSince = newStat["matchesPlayed"] - oldStat["matchesPlayed"];
-        var pointsChange = newStat["rankPoints"] - oldStat["rankPoints"];
-        if (matchesPlayedSince > 0) {
-            formatted += playlist + ": "
-                + 'You have ' + ((pointsChange > 0) ? 'gained' : 'lost') + ' ' + Math.abs(pointsChange) + ' points '
-                + ' in ' + matchesPlayedSince + ' matches'
-                + '\n';
-        }
-    }
-    if (formatted == FORMAT_START) {
-        formatted += 'No updates since last time';
-    }
-    return formatted;
 }
