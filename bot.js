@@ -151,9 +151,6 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
             }
             case 'rank': {
                 var queryParam = discordID;
-                if (args[1]) {
-                    queryParam = args[1];
-                }
                 User.findOne({'discordId': queryParam}, function (err, user) {
                     if (user) {
                         logger.debug("Getting update for " + user.name);
