@@ -96,6 +96,13 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
         var cmd = args[0];
         var argsLeft = args.slice(1);
         switch (cmd) {
+            case 'debug': {
+                logger.debug("Discord Name=" + discordName);
+                logger.debug("Discord Id=" + discordID);
+                logger.debug("Channel ID=" + channelID);
+                logger.debug("Message=" + JSON.stringify(message));
+                break;
+            }
             case 'update': {
                 User.findOne({'discordId': discordID}, function (err, user) {
                     if (user) {
@@ -133,11 +140,21 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
 
                             });
                     }
+                    else {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "No user with name=" + queryParam + " found"
+                        });
+                    }
                 });
                 break;
             }
             case 'rank': {
-                User.findOne({'discordId': discordID}, function (err, user) {
+                var queryParam = discordID;
+                if (args[1]) {
+                    queryParam = args[1];
+                }
+                User.findOne({'discordId': queryParam}, function (err, user) {
                     if (user) {
                         logger.debug("Getting update for " + user.name);
                         getStats(user.steamId, user.platform).then(
@@ -164,6 +181,12 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                         }
                                     });
                             });
+                    }
+                    else {
+                        bot.sendMessage({
+                            to: channelID,
+                            message: "No user with name=" + queryParam + " found"
+                        });
                     }
                 });
                 break;
@@ -193,7 +216,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                         to: channelID,
                                         embed: {
                                             color: Color.BLUE,
-                                            title: 'Registration Sucess',
+                                            title: 'Registration Success',
                                             description: "You have been registered"
                                         }
                                     });
