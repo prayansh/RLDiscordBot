@@ -37,13 +37,13 @@ User = mongoose.model('UsersDB', userSchema);
 Season = mongoose.model('SeasonStatsDB', seasonStatSchema);
 
 var uri = "mongodb://"
-    + properties.mongo_user + ":" + getAuth('mongo') + "@"
-    + "rldiscordbot-shard-00-00-k9ogi.mongodb.net:27017"
-    + ",rldiscordbot-shard-00-01-k9ogi.mongodb.net:27017"
-    + ",rldiscordbot-shard-00-02-k9ogi.mongodb.net:27017"
-    + "/" + properties.mongo_db
-    + "?ssl=true&replicaSet=RLDiscordBot-shard-0&authSource=admin"
-;
+        + properties.mongo_user + ":" + getAuth('mongo') + "@"
+        + "rldiscordbot-shard-00-00-k9ogi.mongodb.net:27017"
+        + ",rldiscordbot-shard-00-01-k9ogi.mongodb.net:27017"
+        + ",rldiscordbot-shard-00-02-k9ogi.mongodb.net:27017"
+        + "/" + properties.mongo_db
+        + "?ssl=true&replicaSet=RLDiscordBot-shard-0&authSource=admin"
+    ;
 
 mongoose.connect(uri, function (err) {
     if (err) console.error(err);
@@ -120,14 +120,12 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                                 description: old2newText(oldSeasonStats, newSeasonStats, argsLeft)
                                             }
                                         });
-                                        _oldSeasonStats.data = newSeasonStats;
-                                        _oldSeasonStats.save(function (err) {
-                                            if (!err) {
-                                                logger.error("Error saving stat");
-                                            } else {
-                                                logger.debug("season data added");
-                                            }
-                                        })
+                                        Season.findOneAndUpdate({'discordId': discordID},
+                                            {"data": newSeasonStats}, function (err, doc) {
+                                                if (err) {
+                                                    logger.error("Couldnt update record");
+                                                }
+                                            });
                                     } else {
                                         logger.error("Error finding season");
                                     }
@@ -144,14 +142,6 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                         logger.debug("Getting update for " + user.name);
                         getStats(user.steamId, user.platform).then(
                             function (response) {
-                                bot.sendMessage({
-                                    to: channelID,
-                                    embed: {
-                                        color: Color.GREEN,
-                                        title: user.name + "'s season " + currentSeason + " ranks",
-                                        description: seasonRankToText(response, argsLeft)
-                                    }
-                                });
                                 var _seasonData = response["rankedSeasons"][currentSeason];
                                 var seasonData = {
                                     "Duel": _seasonData["10"],
@@ -159,6 +149,14 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
                                     "Standard": _seasonData["13"],
                                     "Solo": _seasonData["12"]
                                 };
+                                bot.sendMessage({
+                                    to: channelID,
+                                    embed: {
+                                        color: Color.GREEN,
+                                        title: user.name + "'s season " + currentSeason + " ranks",
+                                        description: seasonRankToText(seasonData, argsLeft)
+                                    }
+                                });
                                 Season.findOneAndUpdate({'discordId': discordID},
                                     {"data": seasonData}, function (err, doc) {
                                         if (err) {
@@ -280,42 +278,41 @@ function rankOrEmpty(name, obj) {
 }
 
 // If provided, let actions restrict the playlist by mentioning "1s" or "Doubles" etc in args.
-var ALL_PLAYLISTS = ["10", "11", "12", "13"];
+var ALL_PLAYLISTS = ["Duel", "Doubles", "Solo", "Standard"];
 function parsePlaylistArgs(argsLeft) {
     var playlists = [];
     if (argsLeft.indexOf("Duel") > -1 || argsLeft.indexOf("1s") > -1) {
-        playlists.push("10");
+        playlists.push("Duel");
     }
     if (argsLeft.indexOf("Doubles") > -1 || argsLeft.indexOf("2s") > -1) {
-        playlists.push("11");
+        playlists.push("Doubles");
     }
     if (argsLeft.indexOf("Solo") > -1) {
-        playlists.push("12");
+        playlists.push("Solo");
     }
     if (argsLeft.indexOf("Standard") > -1 || argsLeft.indexOf("3s") > -1) {
-        playlists.push("13");
+        playlists.push("Standard");
     }
     // If none provided, use all playlists.
     return playlists.length == 0 ? ALL_PLAYLISTS : playlists;
 }
 
 var FORMAT_START = '-----------------------------\n';
-function seasonRankToText(playerData, argsLeft) {
-    var currentSeasonData = playerData.rankedSeasons[currentSeason];
+function seasonRankToText(currentSeasonData, argsLeft) {
     var formatted = FORMAT_START;
     if (currentSeasonData) {
         var playlists = parsePlaylistArgs(argsLeft);
-        if (playlists.indexOf("10") > -1) {
-            formatted += rankOrEmpty("Duel: ", currentSeasonData["10"]);
+        if (playlists.indexOf("Duel") > -1) {
+            formatted += rankOrEmpty("Duel: ", currentSeasonData["Duel"]);
         }
-        if (playlists.indexOf("11") > -1) {
-            formatted += rankOrEmpty("Doubles: ", currentSeasonData["11"]);
+        if (playlists.indexOf("Doubles") > -1) {
+            formatted += rankOrEmpty("Doubles: ", currentSeasonData["Doubles"]);
         }
-        if (playlists.indexOf("12") > -1) {
-            formatted += rankOrEmpty("Solo: ", currentSeasonData["12"]);
+        if (playlists.indexOf("Solo") > -1) {
+            formatted += rankOrEmpty("Solo: ", currentSeasonData["Solo"]);
         }
-        if (playlists.indexOf("13") > -1) {
-            formatted += rankOrEmpty("Standard: ", currentSeasonData["13"]);
+        if (playlists.indexOf("Standard") > -1) {
+            formatted += rankOrEmpty("Standard: ", currentSeasonData["Standard"]);
         }
     }
     if (formatted == FORMAT_START) {
