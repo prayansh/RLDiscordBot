@@ -43,6 +43,7 @@ function parsePlaylistArgs(argsLeft) {
     return playlists.length == 0 ? ALL_PLAYLISTS : playlists;
 }
 
+// Format a collection of current season MMR ranks into the correct rating tier and division.
 function seasonRankToText(currentSeasonData, argsLeft) {
     var formatted = FORMAT_START;
     if (currentSeasonData) {
@@ -66,6 +67,7 @@ function seasonRankToText(currentSeasonData, argsLeft) {
     return formatted;
 }
 
+// Given previous and current stats, format the different for a collection of playlists.
 function old2newText(oldStats, newStats, argsLeft) {
     var playlists = parsePlaylistArgs(argsLeft);
 
@@ -92,5 +94,6 @@ function old2newText(oldStats, newStats, argsLeft) {
 }
 
 module.exports = {
-
+  seasonRankToText: seasonRankToText,
+  old2newText: old2newText,
 }

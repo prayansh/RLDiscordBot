@@ -9,5 +9,7 @@ module.exports = {
       "PC": 1,
       "PS4": 2,
       "XBOX": 3
-  }
+  },
+
+  CurrentSeason: process.env.CURRENT_SEASON
 };
