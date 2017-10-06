@@ -1,3 +1,5 @@
+var bot = require('../discordClient.js');
+
 var consts = require('../consts.js');
 var db = require('../db.js');
 var formatting = require('../formatting.js');
@@ -5,7 +7,11 @@ var rlClient = require('../rlClient.js');
 
 var logger = require('winston');
 
-function run(discordName, discordID, channelID, message, evt) {
+/**
+ * Rank command, !rank <optional playlists>
+ * Shows the tier, division, and MMR for a registered player in particular playlists (all, by default)
+ */
+function run(discordName, discordID, channelID, message, evt, args) {
     db.User.findOne({'discordId': discordID}, function (err, user) {
         if (!user) {
             bot.sendMessage({
@@ -15,7 +21,7 @@ function run(discordName, discordID, channelID, message, evt) {
             return;
         }
 
-        logger.debug("Getting update for " + user.name);
+        logger.debug("Getting rank for " + user.name);
         rlClient.getStats(user.steamId, user.platform).then(
             function (response) {
                 // Remap RL Client seasons to our seasons:
@@ -30,8 +36,8 @@ function run(discordName, discordID, channelID, message, evt) {
                     to: channelID,
                     embed: {
                         color: consts.Color.GREEN,
-                        title: user.name + "'s season " + currentSeason + " ranks",
-                        description: formatting.seasonRankToText(seasonData, argsLeft)
+                        title: user.name + "'s season " + consts.CurrentSeason + " ranks",
+                        description: formatting.seasonRankToText(seasonData, args)
                     }
                 });
                 db.Season.findOneAndUpdate({'discordId': discordID},

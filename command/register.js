@@ -1,3 +1,5 @@
+var bot = require('../discordClient.js');
+
 var consts = require('../consts.js');
 var db = require('../db.js');
 var formatting = require('../formatting.js');
@@ -9,8 +11,8 @@ var logger = require('winston');
  * Register command, !register <player ID> <platform name>
  * Used to map discord users to rocket league accounts.
  */
-function run(discordName, discordID, channelID, message, evt) {
-    if (!args[1] || !args[2]) {
+function run(discordName, discordID, channelID, message, evt, args) {
+    if (!args[0] || !args[1]) {
         bot.sendMessage({
             to: channelID,
             message: "The usage is !register player-name platform"
@@ -27,14 +29,14 @@ function run(discordName, discordID, channelID, message, evt) {
           return;
         }
 
-        logger.debug("Registering player=" + args[1] + ", platform=" + consts.Platforms[args[2]]);
-        rlClient.getStats(args[1], consts.Platforms[args[2].toUpperCase()]).then(
+        logger.debug("Registering player=" + args[0] + ", platform=" + consts.Platforms[args[1]]);
+        rlClient.getStats(args[0], consts.Platforms[args[1].toUpperCase()]).then(
             function (data) {
                 var newUser = new User({
                     "discordId": discordID,
                     "steamId": data.uniqueId,
                     "name": data.displayName,
-                    "platform": consts.Platforms[args[2].toUpperCase()]
+                    "platform": consts.Platforms[args[1].toUpperCase()]
                 });
                 newUser.save(function (err) {
                     logger.debug("new user registered: " + JSON.stringify(err));
@@ -69,11 +71,10 @@ function run(discordName, discordID, channelID, message, evt) {
                     embed: {
                         color: consts.Color.RED,
                         title: 'Registration Failed',
-                        description: "Cannot find player " + args[1] + " for platform " + args[2]
+                        description: "Cannot find player " + args[0] + " for platform " + args[1]
                     }
                 });
-            }
-        }
+            });
     });
 }
 

@@ -1,3 +1,5 @@
+var bot = require('../discordClient.js');
+
 var consts = require('../consts.js');
 var db = require('../db.js');
 var formatting = require('../formatting.js');
@@ -9,7 +11,7 @@ var logger = require('winston');
  * Update command, !update <optional playlists>
  * Shows the change between now and last time stats were fetched.
  */
-function run(discordName, discordID, channelID, message, evt) {
+function run(discordName, discordID, channelID, message, evt, args) {
     db.User.findOne({'discordId': discordID}, function (err, user) {
         if (!user) {
             bot.sendMessage({
@@ -38,7 +40,7 @@ function run(discordName, discordID, channelID, message, evt) {
                             embed: {
                                 color: consts.Color.GREEN,
                                 title: 'Updates for ' + user.name,
-                                description: formatting.old2newText(oldSeasonStats, newSeasonStats, argsLeft)
+                                description: formatting.old2newText(oldSeasonStats, newSeasonStats, args)
                             }
                         });
                         db.Season.findOneAndUpdate({'discordId': discordID},
@@ -52,7 +54,6 @@ function run(discordName, discordID, channelID, message, evt) {
                     }
                 });
             });
-        }
     });
 }
 

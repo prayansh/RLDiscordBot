@@ -17,10 +17,10 @@ logger.add(logger.transports.Console, {
 logger.level = 'debug';
 
 // Add message handling for the bot:
-dicordClient.on('message', function (discordName, discordID, channelID, message, evt) {
+bot.on('message', function (discordName, discordID, channelID, message, evt) {
     // Our bot needs to know if it will execute a command
     // It will listen for messages that will start with `!`
-    if (message.substring(0, 1) == '!') {
+    if (message.substring(0, 1) == '>') {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
         var argsLeft = args.slice(1);
@@ -33,15 +33,15 @@ dicordClient.on('message', function (discordName, discordID, channelID, message,
                 break;
             }
             case 'update': {
-                updateCommand.run(discordName, discordID, channelID, message, evt);
+                updateCommand.run(discordName, discordID, channelID, message, evt, argsLeft);
                 break;
             }
             case 'rank': {
-                rankCommand.run(discordName, discordID, channelID, message, evt);
+                rankCommand.run(discordName, discordID, channelID, message, evt, argsLeft);
                 break;
             }
             case 'register': {
-                registerCommand.run(discordName, discordID, channelID, message, evt);
+                registerCommand.run(discordName, discordID, channelID, message, evt, argsLeft);
                 break;
             }
             // Just add any case commands if you want to..
