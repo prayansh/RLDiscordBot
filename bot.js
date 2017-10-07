@@ -1,8 +1,9 @@
 var bot = require('./discordClient.js');
 
+var ladderCommand = require('./command/ladder.js');
 var rankCommand = require('./command/rank.js');
-var updateCommand = require('./command/update.js');
 var registerCommand = require('./command/register.js');
+var updateCommand = require('./command/update.js');
 
 // Create a database proxy, and connect straight away:
 var db = require('./db.js');
@@ -42,6 +43,10 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
             }
             case 'register': {
                 registerCommand.run(discordName, discordID, channelID, message, evt, argsLeft);
+                break;
+            }
+            case 'ladder': {
+                ladderCommand.run(discordName, discordID, channelID, message, evt, argsLeft);
                 break;
             }
             // Just add any case commands if you want to..
