@@ -100,7 +100,7 @@ function ladderToText(ladder) {
     }
     var formatted = FORMAT_START;
     for (rank of ladder) {
-        formatted += rankOrEmpty(rank.user, rank.data);
+        formatted += rankOrEmpty(rank.user.name, rank.data);
     }
     return formatted;
 }
