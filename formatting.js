@@ -93,7 +93,21 @@ function old2newText(oldStats, newStats, argsLeft) {
     return formatted;
 }
 
+// Given sorted list of {id, user name, playlist rank}, format them as a table
+function ladderToText(ladder) {
+    if (ladder.length === 0) {
+        return "No players in rank";
+    }
+    var formatted = FORMAT_START;
+    for (rank of ladder) {
+        formatted += rankOrEmpty(rank.user.name, rank.data);
+    }
+    return formatted;
+}
+
 module.exports = {
-  seasonRankToText: seasonRankToText,
+  ladderToText: ladderToText,
   old2newText: old2newText,
+  parsePlaylistArgs: parsePlaylistArgs,
+  seasonRankToText: seasonRankToText,
 }
