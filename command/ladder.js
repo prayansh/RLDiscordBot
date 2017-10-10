@@ -57,7 +57,15 @@ function run(discordName, discordID, channelID, message, evt, args) {
                     }
                 }
                 // Finally, sort by MMR and format the final message:
-                rankedRatings.sort(function (a, b) { return b.data.rankPoints - a.data.rankPoints; });
+                rankedRatings.sort(function (a, b) {
+                  if (a.data.rankPoints != b.data.rankPoints) {
+                    // Highest MMR name first.
+                    return b.data.rankPoints - a.data.rankPoints;
+                  } else {
+                    // Then lowest name.
+                    return a.user.name.localeCompare(b.user.name);
+                  }
+                });
                 var message = formatting.ladderToText(rankedRatings);
                 bot.sendMessage({
                     to: channelID,
