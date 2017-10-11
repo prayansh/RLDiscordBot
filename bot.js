@@ -1,4 +1,9 @@
 var bot = require('./discordClient.js');
+var consts = require('./consts.js');
+if (consts.CurrentSeason === undefined) {
+  console.log("Please provide a CURRENT_SEASON value");
+  process.exit(1);
+}
 
 var ladderCommand = require('./command/ladder.js');
 var rankCommand = require('./command/rank.js');
@@ -25,6 +30,7 @@ bot.on('message', function (discordName, discordID, channelID, message, evt) {
         var args = message.substring(1).split(' ');
         var cmd = args[0];
         var argsLeft = args.slice(1);
+        logger.info("Running command: " + cmd);
         switch (cmd) {
             case 'debug': {
                 logger.debug("Discord Name=" + discordName);
