@@ -25,6 +25,7 @@ function run(discordName, discordID, channelID, message, evt, args) {
     var rlPlaylist = rlClient.playlistNameToID(playlist);
 
     // First step, load all the users:
+    logger.info("Finding all users...");
     db.User.find(function (err, users) {
         if (err) {
             logger.error("Error loading users.");
@@ -38,9 +39,11 @@ function run(discordName, discordID, channelID, message, evt, args) {
         }
 
         // Next step, query for all their ranks in one go:
+        logger.info("Getting all stats for " + batchPayload.length + " users...");
         rlClient.getStatsBatch(batchPayload).then(
             function (userRatings) {
                 var rankedRatings = [];
+                logger.info("  ..." + userRatings.length + " ratings returned");
                 for (userRating of userRatings) {
                     // Need rating from RL API...
                     var rating = userRating
@@ -56,6 +59,7 @@ function run(discordName, discordID, channelID, message, evt, args) {
                         });
                     }
                 }
+                logger.info("  ... " + rankedRatings.length + " of those ratings have matching users");
                 // Finally, sort by MMR and format the final message:
                 rankedRatings.sort(function (a, b) {
                   if (a.data.rankPoints != b.data.rankPoints) {
