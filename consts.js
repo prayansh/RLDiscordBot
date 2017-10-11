@@ -11,5 +11,5 @@ module.exports = {
       "XBOX": 3
   },
 
-  CurrentSeason: process.env.CURRENT_SEASON
+  CurrentSeason: 6
 };
