@@ -60,12 +60,12 @@ function run(discordName, discordID, message, args) {
                         return a.user.name.localeCompare(b.user.name);
                     }
                 });
-                var message = formatting.ladderToText(rankedRatings);
+                var text = formatting.ladderToText(rankedRatings);
                 message.channel.send({
                     embed: {
                         color: consts.Color.GREEN,
                         title: "Current ladder for " + playlist + ": ",
-                        description: message
+                        description: text
                     }
                 });
             }
@@ -73,8 +73,7 @@ function run(discordName, discordID, message, args) {
             message.channel.send({
                 embed: {
                     color: consts.Color.RED,
-                    title: "Couldn't load rankings, try again later",
-                    description: message
+                    title: "Couldn't load rankings, try again later"
                 }
             });
         })

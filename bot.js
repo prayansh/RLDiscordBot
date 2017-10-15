@@ -21,22 +21,22 @@ logger.level = 'debug';
 bot.on('message', function (message) {
     if (message.author.bot) return;
 
-    var discordName = message.member.nickname;
+    var discordName = message.member.displayName;
     var discordID = message.member.id.toString();
 
-    if (message.content.substring(0, 1) === '?') {
+    if (message.content.substring(0, 1) === '!') {
         var args = message.content.substring(1).split(' ');
         var cmd = args[0];
         var argsLeft = args.slice(1);
         message.channel.startTyping();
         switch (cmd) {
-            // case 'debug': {
-            //     logger.debug("Discord Name=" + discordName);
-            //     logger.debug("Discord Id=" + discordID);
-            //     logger.debug("Channel ID=" + channelID);
-            //     logger.debug("Message=" + JSON.stringify(message));
-            //     break;
-            // }
+            case 'debug': {
+                logger.debug("Discord Name=" + discordName);
+                logger.debug("Discord Id=" + discordID);
+                logger.debug("Channel ID=" + message.channel.id);
+                logger.debug("Message=" + message.content);
+                break;
+            }
             case 'update': {
                 updateCommand.run(discordName, discordID, message, argsLeft);
                 break;
