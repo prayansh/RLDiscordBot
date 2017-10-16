@@ -40,7 +40,7 @@ function parsePlaylistArgs(argsLeft) {
         playlists.push("Standard");
     }
     // If none provided, use all playlists.
-    return playlists.length == 0 ? ALL_PLAYLISTS : playlists;
+    return playlists.length === 0 ? ALL_PLAYLISTS : playlists;
 }
 
 // Format a collection of current season MMR ranks into the correct rating tier and division.
@@ -73,7 +73,7 @@ function old2newText(oldStats, newStats, argsLeft) {
 
     var formatted = FORMAT_START;
     for (var playlist in oldStats) {
-        if (playlists.indexOf(playlist) == -1) {
+        if (playlists.indexOf(playlist) === -1) {
             continue;
         }
         var oldStat = oldStats[playlist];
@@ -87,7 +87,7 @@ function old2newText(oldStats, newStats, argsLeft) {
                 + '\n';
         }
     }
-    if (formatted == FORMAT_START) {
+    if (formatted === FORMAT_START) {
         formatted += 'No updates since last time';
     }
     return formatted;

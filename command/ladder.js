@@ -13,11 +13,10 @@ var logger = require('winston');
  */
 function run(discordName, discordID, message, args) {
     var playlists = formatting.parsePlaylistArgs(args);
-    if (playlists.length != 1) {
+    if (playlists.length !== 1) {
         message.channel.send("A single playlist must be provided.");
         return;
     }
-    var rankedUsers = [];
     var playlist = playlists[0];
     var rlPlaylist = rlClient.playlistNameToID(playlist);
 
@@ -30,7 +29,7 @@ function run(discordName, discordID, message, args) {
         }
         var userMap = {};
         var batchPayload = [];
-        for (user of users) {
+        for (var user of users) {
             userMap[user['steamId']] = user;
             batchPayload.push({"platformId": user.platform, "uniqueId": user.steamId});
         }
@@ -51,14 +50,14 @@ function run(discordName, discordID, message, args) {
                     if (user && rating) {
                         rankedRatings.push({
                             'user': user,
-                            'data': rating,
+                            'data': rating
                         });
                     }
                 }
                 logger.info("  ... " + rankedRatings.length + " of those ratings have matching users");
                 // Finally, sort by MMR and format the final message:
                 rankedRatings.sort(function (a, b) {
-                    if (a.data.rankPoints != b.data.rankPoints) {
+                    if (a.data.rankPoints !== b.data.rankPoints) {
                         // Highest MMR name first.
                         return b.data.rankPoints - a.data.rankPoints;
                     } else {
