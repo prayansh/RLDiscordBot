@@ -40,7 +40,7 @@ function connect() {
 
 
 module.exports = {
-  User: User,
-  Season: Season,
-  connect: connect,
+    User: User,
+    Season: Season,
+    connect: connect,
 };

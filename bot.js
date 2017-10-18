@@ -1,8 +1,8 @@
 var bot = require('./discordClient.js');
 var consts = require('./consts.js');
 if (consts.CurrentSeason === undefined) {
-  console.log("Please provide a CURRENT_SEASON value");
-  process.exit(1);
+    console.log("Please provide a CURRENT_SEASON value");
+    process.exit(1);
 }
 
 var ladderCommand = require('./command/ladder.js');
@@ -23,39 +23,44 @@ logger.add(logger.transports.Console, {
 logger.level = 'debug';
 
 // Add message handling for the bot:
-bot.on('message', function (discordName, discordID, channelID, message, evt) {
-    // Our bot needs to know if it will execute a command
-    // It will listen for messages that will start with `!`
-    if (message.substring(0, 1) === '!') {
-        var args = message.substring(1).split(' ');
+bot.on('message', function (message) {
+    if (message.author.bot) return;
+
+    var discordName = message.member.displayName;
+    var discordID = message.member.id.toString();
+
+    if (message.content.substring(0, 1) === '!') {
+        var args = message.content.substring(1).split(' ');
         var cmd = args[0];
         var argsLeft = args.slice(1);
+        message.channel.startTyping();
         logger.info("Running command: " + cmd);
         switch (cmd) {
             case 'debug': {
                 logger.debug("Discord Name=" + discordName);
                 logger.debug("Discord Id=" + discordID);
-                logger.debug("Channel ID=" + channelID);
-                logger.debug("Message=" + JSON.stringify(message));
+                logger.debug("Channel ID=" + message.channel.id);
+                logger.debug("Message=" + message.content);
                 break;
             }
             case 'update': {
-                updateCommand.run(discordName, discordID, channelID, message, evt, argsLeft);
+                updateCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
                 break;
             }
             case 'rank': {
-                rankCommand.run(discordName, discordID, channelID, message, evt, argsLeft);
+                rankCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
                 break;
             }
             case 'register': {
-                registerCommand.run(discordName, discordID, channelID, message, evt, argsLeft);
+                registerCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
                 break;
             }
             case 'ladder': {
-                ladderCommand.run(discordName, discordID, channelID, message, evt, argsLeft);
+                ladderCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
                 break;
             }
             // Just add any case commands if you want to..
         }
+
     }
 });

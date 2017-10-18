@@ -18,5 +18,5 @@ var getAuth = function (type) {
 };
 
 module.exports = {
-  getAuth: getAuth,
+    getAuth: getAuth,
 };

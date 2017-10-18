@@ -48,18 +48,22 @@ function getStatsBatch(playerData) {
 
 // Remap RL client playlist IDs to our playlist namse.
 function playlistNameToID(localName) {
-  switch (localName) {
-    case 'Duel': return '10';
-    case 'Doubles': return '11';
-    case 'Solo': return '12';
-    case 'Standard': return '13';
-  }
-  logger.error("Unknown playlist: " + localName);
-  return '';
+    switch (localName) {
+        case 'Duel':
+            return '10';
+        case 'Doubles':
+            return '11';
+        case 'Solo':
+            return '12';
+        case 'Standard':
+            return '13';
+    }
+    logger.error("Unknown playlist: " + localName);
+    return '';
 }
 
 module.exports = {
-  getStats: getStats,
-  getStatsBatch: getStatsBatch,
-  playlistNameToID: playlistNameToID,
+    getStats: getStats,
+    getStatsBatch: getStatsBatch,
+    playlistNameToID: playlistNameToID,
 };

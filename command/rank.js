@@ -1,5 +1,3 @@
-var bot = require('../discordClient.js');
-
 var consts = require('../consts.js');
 var db = require('../db.js');
 var formatting = require('../formatting.js');
@@ -11,13 +9,11 @@ var logger = require('winston');
  * Rank command, !rank <optional playlists>
  * Shows the tier, division, and MMR for a registered player in particular playlists (all, by default)
  */
-function run(discordName, discordID, channelID, message, evt, args) {
+function run(discordName, discordID, message, args, onComplete) {
     db.User.findOne({'discordId': discordID}, function (err, user) {
         if (!user) {
-            bot.sendMessage({
-                to: channelID,
-                message: "No user with name=" + queryParam + " found"
-            });
+            message.channel.send("No user with name=" + discordName + " found");
+            onComplete();
             return;
         }
 
@@ -32,8 +28,7 @@ function run(discordName, discordID, channelID, message, evt, args) {
                     "Standard": rlClientData["13"],
                     "Solo": rlClientData["12"]
                 };
-                bot.sendMessage({
-                    to: channelID,
+                message.channel.send({
                     embed: {
                         color: consts.Color.GREEN,
                         title: user.name + "'s season " + consts.CurrentSeason + " ranks",
@@ -46,10 +41,11 @@ function run(discordName, discordID, channelID, message, evt, args) {
                             logger.error("Couldnt update record");
                         }
                     });
-            });
+                onComplete();
+            }, onComplete);
     });
 }
 
 module.exports = {
-  run: run
+    run: run
 };

@@ -1,5 +1,3 @@
-var bot = require('../discordClient.js');
-
 var consts = require('../consts.js');
 var db = require('../db.js');
 var formatting = require('../formatting.js');
@@ -11,22 +9,18 @@ var logger = require('winston');
  * Register command, !register <player ID> <platform name>
  * Used to map discord users to rocket league accounts.
  */
-function run(discordName, discordID, channelID, message, evt, args) {
+function run(discordName, discordID, message, args, onComplete) {
     if (!args[0] || !args[1]) {
-        bot.sendMessage({
-            to: channelID,
-            message: "The usage is !register player-name platform"
-        });
+        message.channel.send("The usage is !register player-name platform");
+        onComplete();
         return;
     }
     db.User.findOne({'discordId': discordID}, function (err, user) {
         // Oops, user already known.
         if (user) {
-          bot.sendMessage({
-              to: channelID,
-              message: "User already registered as " + user.name
-          });
-          return;
+            message.channel.send("User already registered as " + user.name);
+            onComplete();
+            return;
         }
 
         logger.debug("Registering player=" + args[0] + ", platform=" + consts.Platforms[args[1]]);
@@ -40,8 +34,7 @@ function run(discordName, discordID, channelID, message, evt, args) {
                 });
                 newUser.save(function (err) {
                     logger.debug("new user registered: " + JSON.stringify(err));
-                    bot.sendMessage({
-                        to: channelID,
+                    message.channel.send({
                         embed: {
                             color: consts.Color.BLUE,
                             title: 'Registration Success',
@@ -64,20 +57,21 @@ function run(discordName, discordID, channelID, message, evt, args) {
                 newSeasonStat.save(function (err) {
                     logger.debug("season data added");
                 });
+                onComplete();
             },
             function (err) {
-                bot.sendMessage({
-                    to: channelID,
+                message.channel.send({
                     embed: {
                         color: consts.Color.RED,
                         title: 'Registration Failed',
                         description: "Cannot find player " + args[0] + " for platform " + args[1]
                     }
                 });
+                onComplete();
             });
     });
 }
 
 module.exports = {
-  run: run
+    run: run
 };
