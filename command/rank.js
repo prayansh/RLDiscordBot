@@ -9,10 +9,11 @@ var logger = require('winston');
  * Rank command, !rank <optional playlists>
  * Shows the tier, division, and MMR for a registered player in particular playlists (all, by default)
  */
-function run(discordName, discordID, message, args) {
+function run(discordName, discordID, message, args, onComplete) {
     db.User.findOne({'discordId': discordID}, function (err, user) {
         if (!user) {
             message.channel.send("No user with name=" + discordName + " found");
+            onComplete();
             return;
         }
 
@@ -40,7 +41,8 @@ function run(discordName, discordID, message, args) {
                             logger.error("Couldnt update record");
                         }
                     });
-            });
+                onComplete();
+            }, onComplete);
     });
 }
 

@@ -9,15 +9,17 @@ var logger = require('winston');
  * Register command, !register <player ID> <platform name>
  * Used to map discord users to rocket league accounts.
  */
-function run(discordName, discordID, message, args) {
+function run(discordName, discordID, message, args, onComplete) {
     if (!args[0] || !args[1]) {
         message.channel.send("The usage is !register player-name platform");
+        onComplete();
         return;
     }
     db.User.findOne({'discordId': discordID}, function (err, user) {
         // Oops, user already known.
         if (user) {
             message.channel.send("User already registered as " + user.name);
+            onComplete();
             return;
         }
 
@@ -55,6 +57,7 @@ function run(discordName, discordID, message, args) {
                 newSeasonStat.save(function (err) {
                     logger.debug("season data added");
                 });
+                onComplete();
             },
             function (err) {
                 message.channel.send({
@@ -64,6 +67,7 @@ function run(discordName, discordID, message, args) {
                         description: "Cannot find player " + args[0] + " for platform " + args[1]
                     }
                 });
+                onComplete();
             });
     });
 }

@@ -9,10 +9,11 @@ var logger = require('winston');
  * Update command, !update <optional playlists>
  * Shows the change between now and last time stats were fetched.
  */
-function run(discordName, discordID, message, args) {
+function run(discordName, discordID, message, args, onComplete) {
     db.User.findOne({'discordId': discordID}, function (err, user) {
         if (!user) {
             message.channel.send("No user with name=" + discordName + " found");
+            onComplete();
             return;
         }
 
@@ -46,11 +47,13 @@ function run(discordName, discordID, message, args) {
                     } else {
                         logger.error("Error finding season");
                     }
+                    onComplete();
                 });
-            });
+
+            }, onComplete);
     });
 }
 
 module.exports = {
-  run: run
+    run: run
 };

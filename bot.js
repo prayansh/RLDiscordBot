@@ -1,8 +1,8 @@
 var bot = require('./discordClient.js');
 var consts = require('./consts.js');
 if (consts.CurrentSeason === undefined) {
-  console.log("Please provide a CURRENT_SEASON value");
-  process.exit(1);
+    console.log("Please provide a CURRENT_SEASON value");
+    process.exit(1);
 }
 
 var ladderCommand = require('./command/ladder.js');
@@ -44,23 +44,23 @@ bot.on('message', function (message) {
                 break;
             }
             case 'update': {
-                updateCommand.run(discordName, discordID, message, argsLeft);
+                updateCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
                 break;
             }
             case 'rank': {
-                rankCommand.run(discordName, discordID, message, argsLeft);
+                rankCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
                 break;
             }
             case 'register': {
-                registerCommand.run(discordName, discordID, message, argsLeft);
+                registerCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
                 break;
             }
             case 'ladder': {
-                ladderCommand.run(discordName, discordID, message, argsLeft);
+                ladderCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
                 break;
             }
             // Just add any case commands if you want to..
         }
-        message.channel.stopTyping();
+
     }
 });

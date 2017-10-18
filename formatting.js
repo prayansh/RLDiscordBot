@@ -106,8 +106,8 @@ function ladderToText(ladder) {
 }
 
 module.exports = {
-  ladderToText: ladderToText,
-  old2newText: old2newText,
-  parsePlaylistArgs: parsePlaylistArgs,
-  seasonRankToText: seasonRankToText,
+    ladderToText: ladderToText,
+    old2newText: old2newText,
+    parsePlaylistArgs: parsePlaylistArgs,
+    seasonRankToText: seasonRankToText,
 }

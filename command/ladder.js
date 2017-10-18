@@ -11,13 +11,13 @@ var logger = require('winston');
  * Ladder command, !ladder <playlist>
  * Finds all ranked people in the playlist, and shows their cached results them in order.
  */
-function run(discordName, discordID, message, args) {
+function run(discordName, discordID, message, args, onComplete) {
     var playlists = formatting.parsePlaylistArgs(args);
     if (playlists.length != 1) {
         message.channel.send("A single playlist must be provided.");
+        onComplete();
         return;
     }
-    var rankedUsers = [];
     var playlist = playlists[0];
     var rlPlaylist = rlClient.playlistNameToID(playlist);
 
@@ -74,15 +74,17 @@ function run(discordName, discordID, message, args) {
                         description: text
                     }
                 });
-            }
-        ).catch(function (err) {
-            message.channel.send({
-                embed: {
-                    color: consts.Color.RED,
-                    title: "Couldn't load rankings, try again later"
-                }
+                onComplete();
+            },
+            function (err) {
+                message.channel.send({
+                    embed: {
+                        color: consts.Color.RED,
+                        title: "Couldn't load rankings, try again later"
+                    }
+                });
+                onComplete();
             });
-        })
     });
 }
 
