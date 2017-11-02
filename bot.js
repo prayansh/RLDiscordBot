@@ -43,6 +43,10 @@ bot.on('message', function (message) {
                 logger.debug("Message=" + message.content);
                 break;
             }
+            case 'stop': {
+                message.channel.stopTyping();
+                break;
+            }
             case 'update': {
                 updateCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
                 break;

@@ -43,6 +43,7 @@ function run(discordName, discordID, message, args, onComplete) {
                     });
                 });
                 // Remap RL Client seasons to our seasons:
+                logger.debug("Original=" + JSON.stringify(data));
                 var rlClientData = data["rankedSeasons"][consts.CurrentSeason];
                 var seasonData = {
                     "Duel": rlClientData["10"],
@@ -50,6 +51,7 @@ function run(discordName, discordID, message, args, onComplete) {
                     "Standard": rlClientData["13"],
                     "Solo": rlClientData["12"]
                 };
+                logger.debug("Remapped=" + JSON.stringify(seasonData));
                 var newSeasonStat = new Season({
                     "discordId": discordID,
                     "data": seasonData
