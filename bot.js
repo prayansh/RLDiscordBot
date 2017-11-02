@@ -43,7 +43,11 @@ bot.on('message', function (message) {
                 logger.debug("Message=" + message.content);
                 break;
             }
-            case 'stop': {
+            case 'shutup': {
+                message.channel.stopTyping();
+                break;
+            }
+            case 'stfu': {
                 message.channel.stopTyping();
                 break;
             }
