@@ -44,27 +44,27 @@ bot.on('message', function (message) {
                 break;
             }
             case 'shutup': {
-                message.channel.stopTyping();
+                message.channel.stopTyping(true);
                 break;
             }
             case 'stfu': {
-                message.channel.stopTyping();
+                message.channel.stopTyping(true);
                 break;
             }
             case 'update': {
-                updateCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
+                updateCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping(true));
                 break;
             }
             case 'rank': {
-                rankCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
+                rankCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping(true));
                 break;
             }
             case 'register': {
-                registerCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
+                registerCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping(true));
                 break;
             }
             case 'ladder': {
-                ladderCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping());
+                ladderCommand.run(discordName, discordID, message, argsLeft, () => message.channel.stopTyping(true));
                 break;
             }
             // Just add any case commands if you want to..
