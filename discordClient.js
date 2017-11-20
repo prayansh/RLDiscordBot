@@ -1,5 +1,5 @@
 var auth = require('./auth.js');
-
+var consts = require('./consts.js');
 var Discord = require('discord.js');
 var logger = require('winston');
 
@@ -27,7 +27,7 @@ discordClient.on("ready", function () {
     var guilds = discordClient.guilds.array();
     guilds.forEach(function (guild) {
         var val = Math.floor(Math.random() * randomFunnyMessages.length);
-        guild.defaultChannel.send(randomFunnyMessages[val]);
+        guild.channels.find("id", consts.ChannelId).send(randomFunnyMessages[val]);
     });
 });
 

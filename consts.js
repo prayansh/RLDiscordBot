@@ -11,5 +11,6 @@ module.exports = {
       "XBOX": 3
   },
 
-  CurrentSeason: 6
+  CurrentSeason: process.env.CURRENT_SEASON, //6
+  ChannelId: process.env.CHANNEL_ID //"375537295752691722"
 };
