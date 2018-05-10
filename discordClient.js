@@ -15,15 +15,19 @@ discordClient.on('ready', function (evt) {
 });
 
 var randomFunnyMessages = [
-    "I am back!",
     "EROMBO",
+    ":grand_chump: OMEGALUL :grand_chump:",
     "Moi Moi!",
     "Whats up lads!",
-    "Feels good to be back"
+    "LMG Mounted & Ready!",
+    "All set to jam their meridian",
+    "You can stop worrying about grenades now!",
+    "Fookin' Laser Sights",
+    "Time for some serious protection!"
 ];
 
 discordClient.on("ready", function () {
-    discordClient.user.setGame('Rocket League');
+    discordClient.user.setGame('all sorts of games');
     var guilds = discordClient.guilds.array();
     guilds.forEach(function (guild) {
         var val = Math.floor(Math.random() * randomFunnyMessages.length);
