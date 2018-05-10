@@ -4,7 +4,7 @@ var consts = require('../consts.js');
 var db = require('../db.js');
 var formatting = require('../formatting.js');
 var rlClient = require('../rlClient.js');
-
+var batchSize = 10;
 var logger = require('winston');
 
 /**
@@ -29,16 +29,25 @@ function run(discordName, discordID, message, args, onComplete) {
             return;
         }
         var userMap = {};
-        var batchPayload = [];
+        var payload = [];
         for (var user of users) {
             userMap[user['steamId']] = user;
-            batchPayload.push({"platformId": user.platform, "uniqueId": user.steamId});
+            payload.push({"platformId": user.platform, "uniqueId": user.steamId});
+        }
+        var batchPayload = [];
+        for (var i = 0; i < payload.length; i += batchSize) {
+            batchPayload.push(payload.slice(i, i + batchSize));
         }
 
         // Next step, query for all their ranks in one go:
-        logger.info("Getting all stats for " + batchPayload.length + " users...");
-        rlClient.getStatsBatch(batchPayload).then(
-            function (userRatings) {
+        logger.info("Getting all stats for " + payload.length + " users...");
+        var statsPromises = [];
+        for (var batch of batchPayload) {
+            statsPromises.push(rlClient.getStatsBatch(batch));
+        }
+        Promise.all(statsPromises).then(
+            function (result) {
+                var userRatings = [].concat.apply([], result);
                 var rankedRatings = [];
                 for (var userRating of userRatings) {
                     // Need rating from RL API...
