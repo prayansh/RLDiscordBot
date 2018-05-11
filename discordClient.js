@@ -16,7 +16,7 @@ discordClient.on('ready', function (evt) {
 
 var randomFunnyMessages = [
     "EROMBO",
-    ":grand_chump: OMEGALUL :grand_chump:",
+    "<:grand_chump:360258827930697729> OMEGALUL <:grand_chump:360258827930697729>",
     "Moi Moi!",
     "Whats up lads!",
     "LMG Mounted & Ready!",
