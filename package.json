@@ -16,7 +16,7 @@
   ],
   "author": "Prayansh",
   "dependencies": {
-    "discord.js": "^11.2.1",
+    "discord.js": "^11.3.2",
     "mongoose": "4.9.8",
     "rls-api": "^1.0.2",
     "unirest": "^0.5.1",

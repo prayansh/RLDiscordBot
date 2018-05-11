@@ -9,6 +9,7 @@ var ladderCommand = require('./command/ladder.js');
 var rankCommand = require('./command/rank.js');
 var registerCommand = require('./command/register.js');
 var updateCommand = require('./command/update.js');
+var commandPrefix = '*';
 
 // Create a database proxy, and connect straight away:
 var db = require('./db.js');
@@ -29,11 +30,10 @@ bot.on('message', function (message) {
     var discordName = message.member.displayName;
     var discordID = message.member.id.toString();
 
-    if (message.content.substring(0, 1) === '!') {
+    if (message.content.substring(0, 1) === commandPrefix) {
         var args = message.content.substring(1).split(' ');
         var cmd = args[0];
         var argsLeft = args.slice(1);
-        message.channel.startTyping();
         logger.info("Running command: " + cmd);
         switch (cmd) {
             case 'debug': {
@@ -68,6 +68,9 @@ bot.on('message', function (message) {
                 break;
             }
             // Just add any case commands if you want to..
+            default: {
+                message.channel.stopTyping(true);
+            }
         }
 
     }
