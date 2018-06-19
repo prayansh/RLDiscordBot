@@ -26,17 +26,18 @@ function rankOrEmpty(name, obj) {
 
 // If provided, let actions restrict the playlist by mentioning "1s" or "Doubles" etc in args.
 function parsePlaylistArgs(argsLeft) {
+    argsLeft = argsLeft.map(function(s) { return s.toLowerCase(); });
     var playlists = [];
-    if (argsLeft.indexOf("Duel") > -1 || argsLeft.indexOf("1s") > -1) {
+    if (argsLeft.indexOf("duel") > -1 || argsLeft.indexOf("1s") > -1) {
         playlists.push("Duel");
     }
-    if (argsLeft.indexOf("Doubles") > -1 || argsLeft.indexOf("2s") > -1) {
+    if (argsLeft.indexOf("doubles") > -1 || argsLeft.indexOf("2s") > -1) {
         playlists.push("Doubles");
     }
-    if (argsLeft.indexOf("Solo") > -1) {
+    if (argsLeft.indexOf("solo") > -1) {
         playlists.push("Solo");
     }
-    if (argsLeft.indexOf("Standard") > -1 || argsLeft.indexOf("3s") > -1) {
+    if (argsLeft.indexOf("standard") > -1 || argsLeft.indexOf("3s") > -1) {
         playlists.push("Standard");
     }
     // If none provided, use all playlists.
